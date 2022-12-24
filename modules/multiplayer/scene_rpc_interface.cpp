@@ -159,11 +159,7 @@ Node *SceneRPCInterface::_process_get_node(int p_from, const uint8_t *p_packet, 
 
 		NodePath np = paths;
 
-		node = root_node->get_node(np);
-
-		if (!node) {
-			ERR_PRINT("Failed to get path from RPC: " + String(np) + ".");
-		}
+		node = root_node->get_node_or_null(np);
 		return node;
 	} else {
 		// Use cached path.
@@ -225,7 +221,9 @@ void SceneRPCInterface::process_rpc(int p_from, const uint8_t *p_packet, int p_p
 	}
 
 	Node *node = _process_get_node(p_from, p_packet, node_target, p_packet_len);
-	ERR_FAIL_COND_MSG(node == nullptr, "Invalid packet received. Requested node was not found.");
+	if (node == nullptr) {
+		return;
+	}
 
 	uint16_t name_id = 0;
 	switch (name_id_compression) {
